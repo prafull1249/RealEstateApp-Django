@@ -1,0 +1,10 @@
+Notes - Django 
+
+Activate.bat does not work on windows 10
+virtual env - <pathtoVenv>/scripts/Activate.ps1
+
+Django isntall and project - 
+
+	python manage.py always used when in venv
+	django-admin help  -gives all the commands to be run by django.
+	
