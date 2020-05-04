@@ -61,4 +61,24 @@ Implementing the bootstrap themes
 				As part of this command, django goes in each of the apps and copies the static files in the specified STATIC ROOT destination.
 				This folder should be ignored in gitignore.
 			STATICFILES_DIRS = this is the place where django looks for static files and copies it in the STATIC_ROOT folder.
+			
+		To load static files in the template use the following directive - {% load static %}
+		to reference a static file like css in the html template use the following syntax - href = "{% static 'css/all.css' %}"
+		partials-
+			partials can be partial html pages with html so that we can have separate files for different sections ofthe html page - topbar, navbar and footer, etc.
+			The convention is that we name partial pages with an _ prefixed - ex - _topbar.html
+			To include partial in the an html page use the following directive - {% include 'partials/_topbar.html' %}
+	
+	To use the conditionals in the tags, use the following syntax - 
+
+		{% if '/' == request.path %}
+			class="nav-item active mr-3"
+		{% else %}
+			class="nav-item mr-3"
+		{% endif %}
 		
+	To do linking in the href property of a tag you can use the syntax - {% url 'index' %} => the 'index' indicates the name in the urlpatterns we have in the urls.py of the project.
+	
+	{% extends <base html template>%} should be the first statement followed by any other jinja tag or template tags like {% load static %}
+	First get some static content in thefront end and then we can change it to be dynamic. 
+	
