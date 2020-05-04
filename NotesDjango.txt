@@ -8,3 +8,57 @@ Django isntall and project -
 	python manage.py always used when in venv
 	django-admin help  -gives all the commands to be run by django.
 	
+Django folder structure= 
+
+	dont worry about - 
+		pycache - to make server faster
+		init__.py - keeps everything in oder to import packages.
+	settings.py - has a bunch of key value pairs. 
+				  Secrete-Key should be kept secret it is used in deployment. There is a way to hide it.
+				  Debug = True - should be set false in production and keep true when development.
+				  AllowedHosts - domain names, ip addresses 
+				  InstalledApps-  has default apps and core django
+				  MiddleWARE = lots of middleware packages. 
+				  Root_URLConf - usually in the form of <projectname>.urls to route the incoming traffic.
+				  WSGI_APPLICATION
+				  DAtabases = has all the settings and config for databses
+				  Static - css javascript and static content location
+	urls.py - can be linked to urls package in subsidiary apps.
+	wsgi.py - webserver gateway interface.
+			  How server can be changed to process a particular site.
+
+Django App files folder structure			  
+
+	migrations 
+	admin.py - any thing we want in to admin area
+	apps.py - 
+	models.py - All the entities that we will put in the database.
+
+Creating a page apps-
+	After you create the app with python manage.py startapp <appname> ., make sure to include config object in the apps folder apps.py file(pages.apps.PagesConfig in this case) in the settings.py file in the project folder.
+	This will identiy the app.
+	Each app can have a urls.py which can be included in the urls.py of the project
+
+Output a template - 
+	while specifying a template make sure the templates directory is exposed int he settings.py file of the project. 
+	generally temnplates are palced in a folder alongisde the apps.
+	render method is used to return an html page.
+	
+	Extending templates - 
+		We need to have atemplate already set which has all the html tags basic to the page set. 
+		We use Jinja tags for this and create a base.html which has the basic format of title, body and menu. 
+		{% %} => these are the tags used for Jinja.
+		{% block content%} -> tag to start the body
+		{% endblock %} -> tag to end the body section
+		The above two tags can be used in any html page after they are defined in the base.html
+		{% extends 'base.html' %} -> this is the tag used to extend the base.html template.
+		
+Implementing the bootstrap themes
+	Handling static files - 
+		assets folder - has all the bootstrap, css, javascript files.
+		go to settings file and add STATIC_ROOT, STATICFILES_DIRS paths
+			STATIC_ROOT = directory where Django generates a static folder and considers it as a source for all static files. This is done by running 'python manage.py collectStatic'. 
+				As part of this command, django goes in each of the apps and copies the static files in the specified STATIC ROOT destination.
+				This folder should be ignored in gitignore.
+			STATICFILES_DIRS = this is the place where django looks for static files and copies it in the STATIC_ROOT folder.
+		
