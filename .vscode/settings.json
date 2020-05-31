@@ -1,0 +1,5 @@
+{
+    "python.autoComplete.extraPaths": [
+        "D:\\project\\btre_project\\venv\\Lib\\site-packages"
+    ]
+}

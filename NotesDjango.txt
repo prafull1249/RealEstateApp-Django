@@ -82,3 +82,214 @@ Implementing the bootstrap themes
 	{% extends <base html template>%} should be the first statement followed by any other jinja tag or template tags like {% load static %}
 	First get some static content in thefront end and then we can change it to be dynamic. 
 	
+Recipe to add a new app and corresponding pages - 
+	
+	Create a new app using the command - python manage.py startapp listings
+	Add the new app to the list of installed iapps in the settings.py of the project
+	Add a new page in the templates folder corresponding to the views that we have defined and the urls in the new app
+	Add a urls.py file to route the urls connected to this app. 
+	urls.py should have a urlpatterns for url matching - 
+		ex. path ("\", views.index, name = "listings")
+	add the corresponding views in the views.py of the app to return and render the html pages that we have created in the templates folder.
+	add the url pattern for this app in the urls.py of the project 
+		ex. path('listings/', include('listings.urls'))
+	edit the html page added for the views defined 
+
+How to change password of postgresql user
+	You may change the pg_hba.conf and then reload the postgresql. something in the pg_hba.conf may be like below:
+
+	# "local" is for Unix domain socket connections only
+	local   all             all                                     trust
+	# IPv4 local connections:
+	host    all             all             127.0.0.1/32            trust
+	then you change your user to postgresql, you may login successfully.
+	
+	pg_ctl -D  pg_ctl -D 'C:\Program Files\PostGreSql\12\data'  restart
+	pg_ctl  -U postgres
+		ALTER USER yourusername WITH PASSWORD 'yournewpass';
+
+Master password for pgAdmin - admin
+
+Django postgres setup and migration-
+	The django post gres setup is in the setting.py file of the project.
+	open the settings.py file to find the DATABASE list - 
+		add user, database type, password, database and host.
+	we can do the migrations to create a file -000_initial.py format which tells the database on what to do automatically.
+		python manage.py migrate -> command to run migrations. 
+	In postgres - pgadmin4, you can find the tables created in - Database name,schemas->tables
+
+Create Models and run migrations - 
+	Define models in each of the apps according to the schema decided.
+	define blank=true, default fields, 
+	ImageFields should have an upload_to parameter which is usually - photos/%Y/%m/%d/
+	to be able to use image field we need pillow package. pip install pillow, other packages required are psycopg2 and psycopg2-binary
+	python manage.py makemigraitons - is hte command to make the 0001_initial.py file.
+		this file has all the ifnormation from which the plsql understands which command to run 
+		There is a command to check what command django will run on - python manage.py migrate.
+		
+Create Superuser and register models at admin site		
+	Django allows the users to be admin and let models be handled by the admin.
+	the admins are marked as "staff"
+		they are created by python manage.py createsuperuser -> input the password, name, username and email.
+	Navigation to localhost:8000/admin reveals the super users present in the application 
+	to register models with the admin so that admins can CRUD the model in the datbase, we have to register it with admin privielges.
+		this is done by registering the model in admin.py file in the app. 
+			listings.py - import the model Listings from models.py and register it with - 
+				admin.sites.register(Listings)
+		Similarly do this for all the models required to be controlled by admin.py
+
+Adding MEDIA root and media url for the images to show up 
+	We need to add a setting configuration in urls.py and settings.py	
+	settings.py -> 
+		add a MEDIA_URL = os.path.join(BASE_DIR, 'media')
+		MEDIA_ROOT = '/media/'
+	urls.py (main urls.py)-
+		we need to import settings and static first in the urls.py
+		settings package is part of the django.conf library
+		static package is part of django.conf.urls.static
+		urlpatterns = [<>] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+		
+
+Extending style and css in the admin Area of django	
+	This has to be done by adding an base_site.html in admin folder under template.
+	The base_site.html extends the admin/base.html. 
+	The block branding and extrastyle are for customizing the admin area and header 
+	extrastyle block has the link to admin.css - the admin.css has to be added to the static files in css folder.
+	The styles can be added by manually inspecting the html components and div tags for their style.
+
+Customize Admin DisplayData
+	in the admins.py in each of the apps, we need to add a <Model>Admin class which extends an admin.ModelAdmin class.
+	This class has to be passed along in the register method of the admin.site.register so that the customizations are injected.
+	This class has various functions like list_display, list_filter, search_fields, list_display_links, pagination(list_per_page), etc. 
+	These can be used to customize how the list of the model listings in the admin area is displayed and interacted with.
+
+View Methods and Display
+	Display listings form Db 
+		This can be done by editing the corresponding method at which the listings have to be shown and is mentioned i the urls.py ex. listings.views.index in this case.
+		while rendering the html page and calling the render method in the view methods, we can pass any variable as a dictionary or as a string variable to the html page. 
+		The variables and dictionaries passed can be accessed by a syntax {{<var name>}} ex. {{listing.Address}} - remember that the syntax is not {{%%}} but {{}} 
+		This variable or dictionary is then accessible in the html page template. This indicates a data transfer from the backend to front end. 
+	packages installed - pip install pylint-django because pylint does not usually take care of any references from django so we will have to take the django references and incorporate it in the pylint by installing pyling-django. 
+	humanize package app is used to make any content human readable in the jinja templates. The package app can be added in the installed apps list - django.contribe.humanize
+	humanize needs to be loaded in the template in which it is being used - {{% load humanize %}}
+
+How to setup link to other individual listing from the listings.html page.
+	Each listing when clicked on "MoreInfo" routes the call to individual listing 
+		The anchor tag can be specified like - href="{% url 'listing' listing.id %}" 
+			Here url suggests that it is a link
+				'listing' suggests that it is the method name in the urlpatterns
+				listing.id is the actual parameter being passed in the route since the route is defined as "listings/<int:listing_id>"
+		The method further defined in the views.py file of listings, needs to address this parameter in the parameter list of the method.
+			ex. def listing(request, listing_id):
+					<use the listing_id to retrieve the details of that particular listing.>
+
+Pagination
+	The reference code can be taken from django pagination documentation
+	the idea is that there is a class called paginator in django.core.paginator. 
+	This class can be initiated with the listings and the number of entries we want per page. 
+	This paginator can then be used to get the required page from the page parameter in the request.
+	The paged parameter from the request can be retrieved from request.GET.get('page')
+	The template in the html has various methods which help us to check if the current listings have next_page, otherpages or previous page which can be uesd to build the arrows and the page numbers. 
+	The code can be referred from the pagination documentation of bootstrap and django. 
+	listings cna be ordered by .order_by('-list_date') => descending date sorting.
+	listings can also be filtered by Model.objects.all().filter('is_publshed=True')
+
+If you have a list of options to be selected from a drop down menu in the front end, you can pass iti form the server everytime you give a response. 
+	Create a choices.py which contains all the options with key as the value that will be shown in front end and value as the key of the entry. for ex. 
+		price_choices = {'100000':'$100,000'} - choices.py
+		front end - 
+			<select name="price" class="form-control">
+			  <option selected="true" disabled="disabled">Max Price (All)</option>
+			  {% for key, value in price_choices.items %}
+				<option value="{{ key }}">{{ value }}</option>
+			  {% endfor %}
+			</select>
+
+Search filters = 
+	You can use the filter option provided by django to search for all the keywords, state, city provided in the request.GET parameters. 
+	Pattern is to check if that keyword exists in the request.GET dictionary parameters.
+	If it is available, then get the value of the keywords and execute the following - 
+	
+		query_set = Listing.objects.all() # Listing is the model here which is queried.
+		
+		if 'keywords' in request.GET:
+			keywords = request.GET['keywords']
+			if keywords:
+				query_set = query_set.filter(description__icontains=keywords)
+				
+				
+		# the format of filter is = query_set.filter(<table column to be searched for>__<operator>=<what has to be searched>) 
+		# icontains = contains is the operator and i denotes that it is a case-insensitive comaparison.
+		# similarly we have __lte, __iexact, __gte, etc as the operators. 
+	If you want any ipnput parameter to be preserved in the form, you simply can pass the entire get request in the context object passed in the response. 
+	This values object can be accessible in the template page in the form of values.city for request.GET['city'] in server.
+	
+Accounts and Authenticaiton -
+
+	usually we have register and login and logout method.
+	Always better to have a separate app accounts which will take care of the the users and authenticaiton
+	Django alreayd has this application and we can use it to extend and create our users. 
+	register.html should have a form with method as POST and action as the register method in accounts app. 
+		<form action="{% url 'register' %}" method="POST">
+                {% csrf_token%}
+	There should always be a csrf_token clause in the form to prevent cross site forgery. 
+		{% csrf_token %} - this is how you specify the clause. 
+	you can use redirect or render method in the views.py of an app to render views. 
+		redirect('index') will help redirect the curret page to index.html
+	
+	MEssage alerts can be configured using the django.contribe installed app called messages. 
+	Create an alerts.html which can be a partial and included in any template 
+		{% if messages %}
+			{% for message in messages %}
+				<div id="message" class="container">
+					<div class="alert alert-{{ message.tags }} alert-dismissable text-center" role="alert">
+						<button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span></button>
+						<strong>
+							{% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+								Error:
+							{% else %}
+								{{ message.tags | title }}
+							{% endif %}
+						</strong>
+						{{ message }}
+					</div>
+				</div>
+			{% endfor %}
+		{% endif %}
+	In the settings.py file we include whatever tags we need to set to any specific message level. 
+		ex. MESSAGES_TAGs = {messages.ERROR : 'danger'}
+		Error messages can be displayed as red. 
+	In the view methods, we can set the messages.error to be any message using the following syntax = 
+		messages.error(request, 'Testing messages as errors')
+		request is the request received in the method as a parameter.
+		
+	You can set the message to disappear afte a timeout -
+		//Automatically fade out messages
+			setTimeout(function() {
+				$('#message').fadeOut('slow')
+			}, 3000);
+
+	LOGOUT and navbar -
+		User model can be used to check if the user exists, is logged in or for log out. 
+		Register - 
+			While registering we need to check if passwords match, 
+				username exists - User.objects.filter(username=username).exists()
+				email exists = User.objects.filter(email=email).exists()
+			if everything is good, we can just do a save after logging in the user 
+				user = User.objects.create_user(username=username, password=password, email=email, first_name=first_name, last_name=last_name)
+				user.save()
+		Login - 
+			for login we simply can use the         
+				user = auth.authenticate(username = username, password=password)
+				to authenticate and do a auth.login(request) to login the user. 
+				
+		Logout -
+			for logout we can simply do a auth.logout(request)
+			For frontend we need a javascript to submit a form which is invisible and does a post to logout method - 
+				<li class="nav-item mr-3">
+					<a href="javascript:{document.getElementById('logout').submit()}" class="nav-link">Logout</a>                  
+						<form action="{% url 'logout'%}" method="POST" id="logout">
+							{% csrf_token %}
+						<input type="hidden">
+					</form>
+				</li>
